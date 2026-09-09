@@ -1,0 +1,12 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">@DEVICE_NAME@ on %h</name>
+  <service>
+    <type>_wot._tcp</type>
+    <port>@PORT@</port>
+    <txt-record>td=https://@HOST@:@PORT@/pidisplaysink</txt-record>
+    <txt-record>path=/pidisplaysink</txt-record>
+    <txt-record>scheme=https</txt-record>
+  </service>
+</service-group>

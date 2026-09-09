@@ -53,10 +53,13 @@ describe("PiDisplaySink Thing Description", () => {
   it("uses Basic security instead of nosec in deployed mode", () => {
     const config = loadConfig({
       PI_DISPLAY_ADVERTISED_BASE_URL: "https://display.example/things",
+      PI_DISPLAY_BIND_ADDRESS: "127.0.0.1",
+      PI_DISPLAY_CORS_ALLOWED_ORIGINS: "https://controller.example",
       PI_DISPLAY_DEPLOYED: "true",
-      PI_DISPLAY_PASSWORD: "test-password",
-      PI_DISPLAY_TLS_CERT_PATH: "test-cert.pem",
-      PI_DISPLAY_TLS_KEY_PATH: "test-key.pem",
+      PI_DISPLAY_PASSWORD: "test-password-strong",
+      PI_DISPLAY_THING_ID: "urn:example:display:deployed-test",
+      PI_DISPLAY_TLS_CERT_PATH: "/etc/pi-display-wot/device.crt",
+      PI_DISPLAY_TLS_KEY_PATH: "/etc/pi-display-wot/device.key",
       PI_DISPLAY_USERNAME: "test-user",
     });
     const td = createDisplaySinkTd(config);

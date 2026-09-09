@@ -8,6 +8,7 @@ import {
   ShutdownController,
   startWithRollback,
 } from "./shutdown";
+import { HttpBoundary } from "./http-boundary";
 
 export interface ServientRuntime {
   readonly httpServer: HttpServer;
@@ -45,6 +46,7 @@ export async function startServientRuntime(
   shutdown = new ShutdownController(),
 ): Promise<ServientRuntime> {
   const servient = new Servient();
+  const boundary = new HttpBoundary(config);
   const httpServer = new HttpServer({
     address: config.bindAddress,
     baseUri: config.advertisedBaseUrl,
@@ -55,12 +57,15 @@ export async function startServientRuntime(
           serverCert: config.tls.certificatePath,
           serverKey: config.tls.keyPath,
         }),
-      middleware: enforceInteractionMethods,
+      middleware: (request, response, next) =>
+        boundary.handle(request, response, () => {
+          void enforceInteractionMethods(request, response, next);
+        }),
     security: [{ scheme: config.deployed ? "basic" : "nosec" }],
   });
   servient.addServer(httpServer);
   if (config.credentials !== undefined) {
-    servient.addCredentials({ [config.thingId]: [config.credentials] });
+    servient.addCredentials({ [config.thingId]: config.credentials });
   }
 
   let wot: typeof WoT | undefined;

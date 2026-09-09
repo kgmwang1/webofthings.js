@@ -8,6 +8,13 @@ describe("loadConfig", () => {
     expect(loadConfig({})).toEqual({
       advertisedBaseUrl: "http://127.0.0.1:8484",
       bindAddress: "127.0.0.1",
+      boundary: {
+        allowedOrigins: [],
+        maxBodyBytes: 16_384,
+        rateLimitMaxRequests: 60,
+        rateLimitWindowMs: 60_000,
+        replayWindowMs: 300_000,
+      },
       deployed: false,
       deviceName: "Pi Display Sink",
       port: 8484,
@@ -47,7 +54,10 @@ describe("loadConfig", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(ConfigurationError);
       expect((error as Error).message).toContain("PI_DISPLAY_ADVERTISED_BASE_URL");
+      expect((error as Error).message).toContain("PI_DISPLAY_BIND_ADDRESS");
+      expect((error as Error).message).toContain("PI_DISPLAY_CORS_ALLOWED_ORIGINS");
       expect((error as Error).message).toContain("PI_DISPLAY_USERNAME");
+      expect((error as Error).message).toContain("PI_DISPLAY_THING_ID");
       expect((error as Error).message).toContain("PI_DISPLAY_TLS_CERT_PATH");
     }
   });
