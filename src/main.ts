@@ -1,4 +1,6 @@
 import { loadConfig } from "./config/config";
+import { SessionBroker } from "./broker/display-broker";
+import { FakeReceiver } from "./receivers/fake-receiver";
 import { startServientRuntime } from "./runtime/servient";
 import {
   installTerminationHandlers,
@@ -13,7 +15,8 @@ export async function run(): Promise<void> {
   try {
     const config = loadConfig();
     const runtime = await startServientRuntime(config, shutdown);
-    await exposeDisplaySink(runtime, config);
+    const broker = new SessionBroker(new FakeReceiver());
+    await exposeDisplaySink(runtime, config, broker);
     console.log("Runtime started");
 
     const result = await termination.completion;

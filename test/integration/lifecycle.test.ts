@@ -3,6 +3,12 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { SessionBroker } from "../../src/broker/display-broker";
+import { loadConfig } from "../../src/config/config";
+import { FakeReceiver } from "../../src/receivers/fake-receiver";
+import { startServientRuntime } from "../../src/runtime/servient";
+import { exposeDisplaySink } from "../../src/things/expose-display-sink";
+
 interface ProcessResult {
   readonly code: number | null;
   readonly stderr: string;
@@ -72,5 +78,36 @@ describe.each(["SIGINT", "SIGTERM"] as const)(
       },
       20_000,
     );
+  },
+);
+
+describe.each(["pendingApproval", "connecting", "playing"] as const)(
+  "broker-aware runtime shutdown while %s",
+  (targetState) => {
+    it("settles broker state to idle before Servient shutdown completes", async () => {
+      const config = loadConfig({
+        PI_DISPLAY_ADVERTISED_BASE_URL: "http://display.example/things",
+        PI_DISPLAY_PORT: "0",
+      });
+      const runtime = await startServientRuntime(config);
+      const receiver = new FakeReceiver();
+      const broker = new SessionBroker(receiver);
+      await exposeDisplaySink(runtime, config, broker);
+      await broker.receiveRequest({
+        protocol: "fake",
+        requestedAt: "2026-09-09T10:00:00.000Z",
+        sessionId: "one",
+      });
+      if (targetState !== "pendingApproval") await broker.approve("one");
+      if (targetState === "playing") {
+        receiver.playing("one");
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+
+      await runtime.shutdown.shutdown();
+
+      expect(broker.snapshot().status).toBe("idle");
+      expect(runtime.httpServer.getPort()).toBe(-1);
+    });
   },
 );
