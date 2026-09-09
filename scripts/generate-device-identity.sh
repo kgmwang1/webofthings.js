@@ -45,7 +45,8 @@ done
 [[ "$ADVERTISED_BASE_URL" == https://* && "$ADVERTISED_BASE_URL" != *$'\n'* ]] || { echo "ADVERTISED_BASE_URL must be HTTPS" >&2; exit 2; }
 [[ "$CORS_ALLOWED_ORIGINS" != *$'\n'* && "$CORS_ALLOWED_ORIGINS" != *'*'* ]] || { echo "CORS_ALLOWED_ORIGINS must contain explicit origins" >&2; exit 2; }
 
-install -d -m 0750 -o "$SERVICE_USER" -g "$SERVICE_GROUP" "$STATE_DIR" "$SECRET_DIR"
+install -d -m 0750 -o "$SERVICE_USER" -g "$SERVICE_GROUP" "$STATE_DIR"
+install -d -m 0750 -o root -g "$SERVICE_GROUP" "$SECRET_DIR"
 
 if [[ "$mode" == "reset" ]]; then
   rm -f "$thing_id_file" "$key_file" "$certificate_file" "$environment_file"

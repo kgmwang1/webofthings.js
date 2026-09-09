@@ -3,6 +3,19 @@ name: CI
 on:
   pull_request:
   push:
+  workflow_dispatch:
+    inputs:
+      appliance_target:
+        description: SSH alias configured on the appliance controller
+        required: false
+        type: string
+      appliance_model:
+        description: Raspberry Pi model gate
+        required: false
+        type: choice
+        options:
+          - pi4
+          - pi5
 
 permissions:
   contents: read
@@ -51,3 +64,44 @@ jobs:
           --volume "$GITHUB_WORKSPACE:/repo:ro"
           zricethezav/gitleaks:v8.28.0
           dir /repo --no-banner --redact --exit-code 1
+
+  arm64-package:
+    name: Linux ARM64 package and appliance contracts
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint
+      - run: npm test -- --run test/contract test/integration/lifecycle.test.ts
+      - run: bash -n scripts/*.sh
+      - run: |
+          sudo groupadd --system pi-display-wot
+          sudo useradd --system --gid pi-display-wot --home-dir /var/lib/pi-display-wot --shell /usr/sbin/nologin pi-display-wot
+          sudo PI_DISPLAY_SERVICE_USER=pi-display-wot PI_DISPLAY_SERVICE_GROUP=pi-display-wot bash scripts/test-package-lifecycle.sh
+
+  appliance-gate:
+    name: External ${{ inputs.appliance_model }} power and soak gate
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.appliance_target != ''
+    runs-on:
+      group: appliance-controllers
+      labels: [self-hosted, linux, ARM64]
+    timeout-minutes: 1500
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run physical appliance gate
+        env:
+          DHCP_CHANGE_COMMAND: /usr/local/bin/pi-dhcp-change
+          POWER_CYCLE_COMMAND: /usr/local/bin/pi-power-cycle
+          POWER_CYCLES: 5
+          SOAK_SECONDS: 86400
+        run: >-
+          bash scripts/appliance-test.sh
+          '${{ inputs.appliance_target }}'
+          '${{ inputs.appliance_model }}'

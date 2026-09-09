@@ -31,5 +31,23 @@ describe("secure discovery deployment contracts", () => {
     expect(boundary).toContain("limit_req zone=pi_display_requests");
     expect(boundary).toContain("proxy_ssl_verify on");
     expect(boundary).toContain('proxy_set_header X-Forwarded-For ""');
+    expect(boundary).toContain("listen @BIND_ADDRESS@:@PORT@ ssl");
+    expect(boundary).not.toMatch(/listen (?:127\.0\.0\.1|192\.168\.)/);
+  });
+
+  it("uses hostname-based discovery metadata that survives DHCP address changes", () => {
+    const service = readFileSync(
+      resolve("deploy/avahi/pi-display-wot.service"),
+      "utf8",
+    );
+
+    expect(service).toContain("https://@HOST@:@PORT@/pidisplaysink");
+    expect(service).not.toMatch(/(?:127\.0\.0\.1|192\.168\.)/);
+  });
+
+  it("renders service metadata with permissions readable by the Avahi chroot", () => {
+    const installer = readFileSync(resolve("scripts/install.sh"), "utf8");
+
+    expect(installer).toContain('chmod 0644 "$destination"');
   });
 });
