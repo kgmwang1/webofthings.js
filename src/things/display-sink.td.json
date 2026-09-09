@@ -1,0 +1,149 @@
+{
+  "@context": "https://www.w3.org/2022/wot/td/v1.1",
+  "@type": "Thing",
+  "id": "urn:dev:wot:pi-display-sink",
+  "title": "PiDisplaySink",
+  "description": "A receiver-neutral control plane for a Raspberry Pi display sink.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "status": {
+      "title": "Status",
+      "description": "Current display sink lifecycle state.",
+      "type": "string",
+      "enum": ["idle", "pendingApproval", "connecting", "playing", "stopping", "error"],
+      "readOnly": true,
+      "observable": true
+    },
+    "activeSession": {
+      "title": "Active session",
+      "description": "Safe metadata for the pending or active session, or null when idle.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "protocol": { "type": "string", "minLength": 1 },
+            "state": {
+              "type": "string",
+              "enum": ["pendingApproval", "connecting", "playing", "stopping", "error"]
+            },
+            "senderName": { "type": "string" },
+            "requestedAt": { "type": "string", "format": "date-time" }
+          },
+          "required": ["id", "protocol", "state", "requestedAt"]
+        }
+      ],
+      "readOnly": true,
+      "observable": true
+    },
+    "supportedProtocols": {
+      "title": "Supported protocols",
+      "description": "Receiver protocols currently available on this device.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 0,
+      "uniqueItems": true,
+      "readOnly": true,
+      "observable": true
+    },
+    "deviceName": {
+      "title": "Device name",
+      "description": "Human-readable display sink name.",
+      "type": "string",
+      "minLength": 1,
+      "readOnly": true,
+      "observable": true
+    },
+    "volume": {
+      "title": "Volume",
+      "description": "Current audio volume as an integer percentage.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "unit": "%",
+      "readOnly": true,
+      "observable": true
+    }
+  },
+  "actions": {
+    "approveSession": {
+      "title": "Approve session",
+      "description": "Approve a pending receiver session.",
+      "input": {
+        "type": "object",
+        "properties": { "sessionId": { "type": "string", "minLength": 1 } },
+        "required": ["sessionId"]
+      },
+      "safe": false,
+      "idempotent": true
+    },
+    "rejectSession": {
+      "title": "Reject session",
+      "description": "Reject a pending receiver session.",
+      "input": {
+        "type": "object",
+        "properties": { "sessionId": { "type": "string", "minLength": 1 } },
+        "required": ["sessionId"]
+      },
+      "safe": false,
+      "idempotent": true
+    },
+    "stopSession": {
+      "title": "Stop session",
+      "description": "Stop the pending or active receiver session.",
+      "input": {
+        "type": "object",
+        "properties": { "sessionId": { "type": "string", "minLength": 1 } },
+        "required": ["sessionId"]
+      },
+      "safe": false,
+      "idempotent": true
+    },
+    "setVolume": {
+      "title": "Set volume",
+      "description": "Set audio volume as an integer percentage.",
+      "input": { "type": "integer", "minimum": 0, "maximum": 100, "unit": "%" },
+      "safe": false,
+      "idempotent": true
+    }
+  },
+  "events": {
+    "sessionRequested": {
+      "title": "Session requested",
+      "data": { "$ref": "#/properties/activeSession/oneOf/1" }
+    },
+    "sessionStarted": {
+      "title": "Session started",
+      "data": { "$ref": "#/properties/activeSession/oneOf/1" }
+    },
+    "sessionEnded": {
+      "title": "Session ended",
+      "data": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 }
+        },
+        "required": ["sessionId", "reason"]
+      }
+    },
+    "sessionError": {
+      "title": "Session error",
+      "data": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string", "minLength": 1 },
+          "code": { "type": "string", "minLength": 1 },
+          "message": { "type": "string", "minLength": 1 }
+        },
+        "required": ["sessionId", "code", "message"]
+      }
+    }
+  }
+}

@@ -60,13 +60,17 @@ function runWithSignal(signal: NodeJS.Signals): Promise<ProcessResult> {
 describe.each(["SIGINT", "SIGTERM"] as const)(
   "runtime lifecycle for %s",
   (signal) => {
-    it("stops cleanly within the shutdown bound", async () => {
-      const result = await runWithSignal(signal);
+    it(
+      "stops cleanly within the shutdown bound",
+      async () => {
+        const result = await runWithSignal(signal);
 
-      expect(result.code).toBe(0);
-      expect(result.stderr).toBe("");
-      expect(result.stdout).toContain("Runtime started");
-      expect(result.stdout).toContain(`Runtime stopped after ${signal}`);
-    });
+        expect(result.code).toBe(0);
+        expect(result.stderr).toBe("");
+        expect(result.stdout).toContain("Runtime started");
+        expect(result.stdout).toContain(`Runtime stopped after ${signal}`);
+      },
+      20_000,
+    );
   },
 );

@@ -1,15 +1,19 @@
+import { loadConfig } from "./config/config";
 import { startServientRuntime } from "./runtime/servient";
 import {
   installTerminationHandlers,
   ShutdownController,
 } from "./runtime/shutdown";
+import { exposeDisplaySink } from "./things/expose-display-sink";
 
 export async function run(): Promise<void> {
   const shutdown = new ShutdownController();
   const termination = installTerminationHandlers(shutdown);
 
   try {
-    await startServientRuntime(shutdown);
+    const config = loadConfig();
+    const runtime = await startServientRuntime(config, shutdown);
+    await exposeDisplaySink(runtime, config);
     console.log("Runtime started");
 
     const result = await termination.completion;
