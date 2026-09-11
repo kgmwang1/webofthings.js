@@ -6,8 +6,8 @@ model="${2:-}"
 power_cycles="${POWER_CYCLES:-5}"
 soak_seconds="${SOAK_SECONDS:-86400}"
 sample_seconds="${SAMPLE_SECONDS:-60}"
-[[ -n "$target" && "$model" =~ ^pi[45]$ ]] || {
-  echo "usage: appliance-test.sh SSH_TARGET pi4|pi5" >&2
+[[ -n "$target" && "$model" == "pi4" ]] || {
+  echo "usage: appliance-test.sh SSH_TARGET pi4" >&2
   exit 2
 }
 [[ -n "${POWER_CYCLE_COMMAND:-}" ]] || {

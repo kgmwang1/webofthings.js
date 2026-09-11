@@ -13,6 +13,7 @@ const expectedSuffixes = [
   ".cdx.json",
   "-dependencies.json",
   "-build-inputs.txt",
+  "-media-entry.json",
 ];
 const files = readdirSync(outputDirectory).filter((name) => name !== "SHA256SUMS");
 for (const suffix of expectedSuffixes) {
@@ -44,5 +45,15 @@ const sbomName = files.find((name) => name.endsWith(".cdx.json"));
 const sbom = JSON.parse(readFileSync(resolve(outputDirectory, sbomName), "utf8"));
 if (sbom.bomFormat !== "CycloneDX" || sbom.specVersion === undefined) {
   throw new Error("Release SBOM is not a CycloneDX document");
+}
+const mediaEntryName = files.find((name) => name.endsWith("-media-entry.json"));
+const mediaEntry = JSON.parse(readFileSync(resolve(outputDirectory, mediaEntryName), "utf8"));
+if (
+  mediaEntry.gate !== "real-media-entry" ||
+  mediaEntry.result !== "pass" ||
+  mediaEntry.conditions?.length !== 6 ||
+  mediaEntry.conditions.some(({ status }) => status !== "pass")
+) {
+  throw new Error("Release media-entry gate is missing or blocked");
 }
 console.log(`Verified ${files.length} release files and their checksums.`);

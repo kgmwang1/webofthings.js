@@ -8,7 +8,7 @@ while (( $# > 0 )); do
     --expected-model) expected_model="${2:-}"; shift 2 ;;
     --exercise-recovery) exercise_recovery=true; shift ;;
     --help)
-      echo "usage: smoke-test.sh [--expected-model pi4|pi5] [--exercise-recovery]"
+      echo "usage: smoke-test.sh [--expected-model pi4] [--exercise-recovery]"
       exit 0
       ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
@@ -29,8 +29,7 @@ if [[ -n "$expected_model" ]]; then
   model="$(tr -d '\0' </proc/device-tree/model 2>/dev/null || true)"
   case "$expected_model" in
     pi4) [[ "$model" == *"Raspberry Pi 4"* ]] ;;
-    pi5) [[ "$model" == *"Raspberry Pi 5"* ]] ;;
-    *) echo "expected model must be pi4 or pi5" >&2; exit 2 ;;
+    *) echo "expected model must be pi4" >&2; exit 2 ;;
   esac || { echo "hardware model mismatch: $model" >&2; exit 1; }
 fi
 

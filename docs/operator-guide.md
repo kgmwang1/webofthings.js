@@ -6,13 +6,10 @@ description:
 
 ## Supported Platforms
 
-The release artifact targets 64-bit Raspberry Pi OS on Raspberry Pi 4 and
-Raspberry Pi 5. Development and continuous integration use Node.js 22 and 24.
-The package expects systemd, nginx, Avahi, OpenSSL, and a system Node.js
-executable at `/usr/bin/node`.
-
-Raspberry Pi 5 validation is a release prerequisite. Do not publish or promote
-an artifact until its appliance smoke, power-cycle, and soak gates pass.
+The release artifact targets 64-bit Raspberry Pi OS on Raspberry Pi 4.
+Development and continuous integration use Node.js 22 and 24. The package
+expects systemd, nginx, Avahi, OpenSSL, and a system Node.js executable at
+`/usr/bin/node`.
 
 ## Build the Artifact
 
@@ -81,8 +78,7 @@ Run the appliance smoke check after installation or an upgrade:
 sudo /opt/pi-display-wot/current/scripts/smoke-test.sh --expected-model pi4
 ```
 
-Use `pi5` on Raspberry Pi 5. Add `--exercise-recovery` only during a maintenance
-window.
+Add `--exercise-recovery` only during a maintenance window.
 
 ## Upgrade and Roll Back
 

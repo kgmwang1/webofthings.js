@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "platform": "raspberry-pi-4",
+  "releaseRevision": "292026fdf3e3360c6262a3c6ac7c68a90623b9b1",
+  "systemdChildProcessReaping": {
+    "status": "pass",
+    "service": "pi-display-wot.service",
+    "method": "live control-group cleanup after bounded stop and crash recovery"
+  },
+  "resourceBaseline": {
+    "status": "pass",
+    "durationSeconds": 86400,
+    "sampleCount": 1431,
+    "rssKiB": {
+      "minimum": 78604,
+      "maximum": 89720
+    },
+    "identityAnomalies": 0,
+    "restartAnomalies": 0,
+    "powerAnomalies": 0
+  }
+}

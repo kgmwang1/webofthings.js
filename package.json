@@ -9,6 +9,7 @@
     "build": "tsc --project tsconfig.json",
     "check:dependencies": "node scripts/verify-dependencies.cjs",
     "check:forbidden": "node scripts/verify-forbidden-terms.cjs",
+    "check:media-entry": "node scripts/check-media-entry.cjs",
     "lint": "eslint src test",
     "start": "node dist/main.js",
     "test": "vitest run",

@@ -15,7 +15,6 @@ on:
         type: choice
         options:
           - pi4
-          - pi5
 
 permissions:
   contents: read
@@ -113,7 +112,7 @@ jobs:
           sudo PI_DISPLAY_SERVICE_USER=pi-display-wot PI_DISPLAY_SERVICE_GROUP=pi-display-wot bash scripts/test-package-lifecycle.sh
 
   appliance-gate:
-    name: External ${{ inputs.appliance_model }} power and soak gate
+    name: External Raspberry Pi 4 power and soak gate
     if: >-
       github.event_name == 'workflow_dispatch' &&
       inputs.appliance_target != ''

@@ -10,10 +10,8 @@ a receiver-neutral display control plane. The current implementation uses a
 deterministic fake receiver to validate session approval, playback, stop,
 failure, and recovery behavior.
 
-The service targets 64-bit Raspberry Pi OS on Raspberry Pi 4 and Raspberry Pi 5.
-Node.js 22 and 24 are supported for development and continuous integration.
-Physical Raspberry Pi 5 release validation is still required before publishing a
-release.
+The service targets 64-bit Raspberry Pi OS on Raspberry Pi 4. Node.js 22 and 24
+are supported for development and continuous integration.
 
 ## Development
 

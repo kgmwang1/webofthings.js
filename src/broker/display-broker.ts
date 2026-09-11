@@ -11,6 +11,8 @@ import type {
   ReceiverRequest,
 } from "../receivers/receiver-adapter";
 
+export const BROKER_CONTRACT_VERSION = "1.0.0";
+
 export interface BrokerScheduler {
   clearTimeout(handle: unknown): void;
   setTimeout(callback: () => void, delayMs: number): unknown;

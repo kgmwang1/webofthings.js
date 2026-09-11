@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { BrokerError } from "../../../src/broker/errors";
-import { SessionBroker } from "../../../src/broker/display-broker";
+import {
+  BROKER_CONTRACT_VERSION,
+  SessionBroker,
+} from "../../../src/broker/display-broker";
 import { FakeReceiver } from "../../../src/receivers/fake-receiver";
 
 const request = (sessionId: string) => ({
@@ -17,6 +20,10 @@ async function settle(): Promise<void> {
 }
 
 describe("SessionBroker", () => {
+  it("exports a versioned broker contract", () => {
+    expect(BROKER_CONTRACT_VERSION).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+
   it("serializes concurrent requests and returns a deterministic busy result", async () => {
     const receiver = new FakeReceiver();
     const broker = new SessionBroker(receiver);
@@ -58,6 +65,35 @@ describe("SessionBroker", () => {
       "idle:sessionEnded",
     ]);
     expect(broker.snapshot()).toMatchObject({ activeSession: null, status: "idle" });
+  });
+
+  it("preserves observations through connect and disconnect cycles", async () => {
+    const receiver = new FakeReceiver();
+    const broker = new SessionBroker(receiver);
+    const observations: string[] = [];
+    broker.subscribe((snapshot) => observations.push(snapshot.status));
+    await broker.start();
+
+    for (const sessionId of ["one", "two"]) {
+      await broker.receiveRequest(request(sessionId));
+      await broker.approve(sessionId);
+      receiver.connected(sessionId);
+      receiver.playing(sessionId);
+      await settle();
+      receiver.disconnected(sessionId);
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+
+    expect(observations).toEqual([
+      "pendingApproval",
+      "connecting",
+      "playing",
+      "idle",
+      "pendingApproval",
+      "connecting",
+      "playing",
+      "idle",
+    ]);
   });
 
   it("expires approval and ignores stale events for a subsequent owner", async () => {
@@ -102,6 +138,23 @@ describe("SessionBroker", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("does not allow receiver events to bypass session approval", async () => {
+    const receiver = new FakeReceiver();
+    const broker = new SessionBroker(receiver);
+    await broker.start();
+    await broker.receiveRequest(request("one"));
+
+    receiver.connected("one");
+    receiver.playing("one");
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(broker.snapshot()).toMatchObject({
+      activeSession: { id: "one", state: "pendingApproval" },
+      status: "pendingApproval",
+    });
+    expect(receiver.calls).not.toContainEqual({ operation: "approve", value: "one" });
   });
 
   it("bounds stalled adapter cleanup and releases ownership", async () => {
