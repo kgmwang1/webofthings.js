@@ -176,7 +176,7 @@ case "$action" in
     ln -sfn "$current_target" "$install_root/previous"
     ln -s "$rollback_target" "$install_root/current.next"
     mv -Tf "$install_root/current.next" "$install_root/current"
-    [[ "$skip_host_integration" == "true" ]] || systemctl restart pi-display-wot.service
+    configure_host "$rollback_target"
     printf 'activated_release=%s\n' "$(basename "$rollback_target")"
     ;;
   reset)

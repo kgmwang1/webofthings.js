@@ -65,6 +65,34 @@ jobs:
           zricethezav/gitleaks:v8.28.0
           dir /repo --no-banner --redact --exit-code 1
 
+  release-baseline:
+    name: Reproducible release baseline
+    needs: [validate, dependencies, secrets]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check:forbidden
+      - name: Generate release twice
+        run: |
+          npm run release -- "$RUNNER_TEMP/release-a"
+          npm run release -- "$RUNNER_TEMP/release-b"
+      - name: Compare and verify release outputs
+        run: |
+          diff -u "$RUNNER_TEMP/release-a/SHA256SUMS" "$RUNNER_TEMP/release-b/SHA256SUMS"
+          node scripts/verify-release.cjs "$RUNNER_TEMP/release-a"
+          node scripts/verify-release.cjs "$RUNNER_TEMP/release-b"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pi-display-wot-release-baseline
+          path: ${{ runner.temp }}/release-a/
+          if-no-files-found: error
+          retention-days: 30
+
   arm64-package:
     name: Linux ARM64 package and appliance contracts
     runs-on: ubuntu-24.04-arm

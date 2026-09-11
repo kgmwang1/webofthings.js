@@ -1,5 +1,17 @@
-## How do I run the tests?
+---
+title: Test Suites
+description: Commands and scope for the Pi Display Sink automated tests
+---
 
-Install mocha: `npm install -g mocha`
+## Run the Tests
 
-Run the tests: `mocha`
+Install locked dependencies, then run all Vitest suites:
+
+```bash
+npm ci
+npm test
+```
+
+Use `npm run test:unit` for isolated modules and `npm run test:integration` for
+runtime boundaries. Contract tests cover the Thing Description, handlers, Avahi,
+and systemd assets.

@@ -1,78 +1,50 @@
-# Node.js Web of Things Server
-A server and gateway reference implementation of the [W3C Web Thing Model](http://model.webofthings.io),
-written in Node.js and tailored for embedded systems.
+---
+title: Pi Display Sink
+description: Node-WoT control plane and Raspberry Pi service for a display sink
+---
 
-*Note:* while this code is used in the [Building the Web of Things book](http://book.webofthings.io), it isn't the code of the book which [you can find here](https://github.com/webofthings/wot-book/).
+## Overview
 
-## What is the Web Thing Model?
-It's a simple model for Things to interact together and with app via the Web. Read more about
-it in a [blogpost](http://radar.oreilly.com/2015/10/helping-things-in-the-iot-speak-the-same-language.html) or even more in a [webinar](https://www.oreilly.com/ideas/building-iot-systems-with-web-standards)!
+Pi Display Sink exposes an authenticated W3C Web of Things Thing Description for
+a receiver-neutral display control plane. The current implementation uses a
+deterministic fake receiver to validate session approval, playback, stop,
+failure, and recovery behavior.
 
-## What is webofthings.js?
-A simple, lightweight, and extensible implementation of the [W3C Web of Things Model](http://model.webofthings.io).
- in Node.js. It not (yet) a bomb proof gateway but a way to experiment with the Web of Things and the basis of the [Building the Web of Things book](https://www.manning.com/books/building-the-web-of-things?a_bid=16f48f14&a_aid=wot) 
-where you'll learn how the framework works, how to deploy it on a Raspberry Pi and how to use it to serve Web access to sensors 
-and actuators.
+The service targets 64-bit Raspberry Pi OS on Raspberry Pi 4 and Raspberry Pi 5.
+Node.js 22 and 24 are supported for development and continuous integration.
+Physical Raspberry Pi 5 release validation is still required before publishing a
+release.
 
-## What does this do?
-First, it implements a Web of Things server that you can run on any platform that supports Node and in particular on many embedded devices. Second, it exposes the services and function of your service over HTTP and WebSockets.
+## Development
 
-## What devices does it support?
-
-Any Windows or *Nix device really but if you want to use the GPIOs you will need an embedded device.
-The framework was tested on the Raspberry Pi (A, B, B+, Zero and 2) and the Beaglebone Black.
-Most of the code also works on the Intel Edison.
-
-**Note:** currently `webofthings.js` only works with Node < 5.0.0 (due to the removal of `Object.observe()` from ES6) and was tested on the target devices with the Node 4 LTS. If you really want to use Node > 4, check the [ES6-compatibility](https://github.com/webofthings/webofthings.js/tree/ES6-compatibility) branch. 
-
-## How is it built?
-![application architecture](https://raw.githubusercontent.com/webofthings/webofthings.js/master/docs/webofthingsjs-archi.png)
-
-## How do I start it?
-
-[![NPM](https://nodei.co/npm/webofthings.png?downloads=true)](https://www.npmjs.com/package/webofthings)
-
-Install it: `npm install webofthings`
-
-Run it: `node wot.js` or `sudo node wot.js` if you plan to use the temperature and humidity plugins.
-
-## How do I configure it?
-
-The WoT gateway can be tweaked by changing the configuration parameters in `/resources/piNoLd.json`.
-The following parameters are available:
-
-```
-  "customFields": {
-    "hostname":"localhost",
-    "port": 8484,
-    "secure": true, // true means the gateway will require HTTPS and an API key
-    "dataArraySize" : 30 // size of the Properties and Actions arrays.
-  },
+```bash
+npm ci
+npm run build
+npm run lint
+npm test
 ```
 
-If you use it in a serious environment make sure you:
+Run the local service after building:
 
-1. Generate/buy your own TLS certificates to replace the public certificate and private key in `/resources`.
-2. Make sure you generate a new API token to replace the default one (`cKXRTaRylYWQiF3MICaKndG4WJMcVLFz`) in
-`/resources/auth.json`, you can use the `utils.generateApiToken()` function to generate a new one.
+```bash
+npm start
+```
 
-## How do I extend it?
+The default development endpoint is `http://127.0.0.1:8484/pidisplaysink`.
+Deployed systems require HTTPS, HTTP Basic authentication, explicit CORS
+origins, and provisioned identity.
 
-The WoT Gateway framework comes with three internal plugins to connect it to sensors and actuators:
+## Deployment
 
-* `dht22Plugin.js` to connect a temperature and humidity sensor
-* `ledsPlugin.js` to connect it to LEDs
-* `pirPlugin.js` to connect it to a passive infrared sensor
+Create the ARM64 appliance artifact with `npm run release`. Install and manage
+it with the non-interactive operations documented in
+[docs/operator-guide.md](docs/operator-guide.md). The guide covers provisioning,
+discovery, authentication, operation, reset, logs, supported platforms,
+upgrades, and rollback.
 
-but it can easily be extended by adding internal or external plugins (i.e., to serve the resources
-of other devices via a Web API) extending `corePlugin.js`.
+Existing users should read [docs/migration.md](docs/migration.md) for removed
+endpoints, representations, and extension surfaces.
 
-### How do I run the tests?
+## License
 
-1. Install mocha `npm install -g mocha`
-2. Run the tests `mocha`
-
-## How do I learn more about the Web of Things?
-Browse http://webofthings.org and/or buy the [Building the Web of Things Book](http://book.webofthings.io)
-
-![building the web of things](https://raw.githubusercontent.com/webofthings/webofthings.js/master/docs/building-the-web-of-things.png)
+This project is licensed under Apache-2.0. See [LICENSE](LICENSE).
